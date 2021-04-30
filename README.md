@@ -1,4 +1,4 @@
-# cracking_keepass
+# Cracking a Keepass database
 A tutorial on using JohnTheRipper and Hashcat to crack keepass hash files when you've lost the password    
 
 
@@ -50,3 +50,34 @@ openssl version
 OpenSSL 1.1.1h  22 Sep 2020
 ```
 If it's not installed on your system, I recommend following the instructions [here](https://cloudwafer.com/blog/installing-openssl-on-ubuntu-16-04-18-04/) or [here](https://stackoverflow.com/questions/3016956/how-do-i-install-the-openssl-libraries-on-ubuntu) but download the most up-to-date version instead of the one mentioned on those pages.
+
+## Installing John the Ripper  
+There's two tools we're going to use: John the Ripper and Hashcat. JtR will process our keepass database file and extract the hash for it. 
+The original version ([found here](https://github.com/piyushcse29/john-the-ripper)) hasn't been updated in years and no longer supports OpenSSL versions > 1.1.0 Fortunately, our friends as Openwall have [kept it updated](https://www.openwall.com/john/).   
+I'm going to install the package locally in a folder for my keepass projects, called but you can install it wherever you like. Just update the path for your system in the code below.  The JtR documentation recommends installing several other packages, so we'll do that now too.
+```
+[user]~$ sudo apt-get -y install build-essential libssl-dev git zlib1g-dev
+[user]~$ sudo apt-get -y install yasm libgmp-dev libpcap-dev pkg-config libbz2-dev
+```
+Next, clone the latest version of JtR from the GIT repo and build it
+```
+[user]~$ cd ~/Documents/crackpass
+[user]~$ git clone git://github.com/magnumripper/JohnTheRipper -b bleeding-jumbo john 
+[user]~$ cd  john/src
+[user]~$ ./configure && make -s clean && make -sj4
+```
+Install tab completion
+```
+[user]~$ sudo make shell-completion
+```
+Now test your build. This took about 5 minutes on my machines
+```
+[user]~$ cd ~/Documents/crackpass/john/run
+[user]~$ ./john --test=0
+```
+![JtR test](https://github.com/patecm/cracking_keepass/blob/63aa8d3983500791edf2e0f56926566811f6fdff/images/john_test.png) 
+And (optionally) benchmark the build. **Note that this can take 25+ minutes and is NOT required**
+```
+[user]~$ ./john --test
+```
+
