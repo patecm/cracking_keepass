@@ -81,3 +81,93 @@ And (optionally) benchmark the build. **Note that this can take 25+ minutes and 
 [user]~$ ./john --test
 ```
 
+## Installing HashCat
+Some Linux instilations come with hashcat built in or a version you can download with apt-get. But, hashcat recommends compiling from their github, so that's what we're going to do. 
+```
+[user]$ git clone https://github.com/hashcat/hashcat.git
+[user]$ cd hashcat
+[user]$ make
+[user]$ sudo make install
+[user]$ cd ..
+```
+*Note: If you install it, cached kernels, session files, restore- and pot-files etc. will go to $HOME/.hashcat/*
+
+Now check that hashcat is recognizing your devices, like your GPU  
+```[user]$ hashcat -I```  
+
+![Hashcat CUDA check](https://github.com/patecm/cracking_keepass/blob/f6e132d3ee7b745ccee8e4e6dfb4a2f46c56c80f/images/hashcat_cuda_info.png)
+
+Note: If you choose to benchmark hashcat, you might get the warning:
+```
+Benchmarking uses hand-optimized kernel code by default.
+You can use it in your cracking session by setting the -O option.
+Note: Using optimized kernel code limits the maximum supported password length.
+To disable the optimized kernel code in benchmark mode, use the -w option.
+
+* Device #1: WARNING! Kernel exec timeout is not disabled.
+             This may cause "CL_OUT_OF_RESOURCES" or related errors.
+             To disable the timeout, see: https://hashcat.net/q/timeoutpatch
+* Device #2: WARNING! Kernel exec timeout is not disabled.
+             This may cause "CL_OUT_OF_RESOURCES" or related errors.
+             To disable the timeout, see: https://hashcat.net/q/timeoutpatch
+```
+Per the [timeoutpatch documentation](https://hashcat.net/wiki/doku.php?id=timeout_patch) you need to make a config file:
+```
+[user]~$ cd /usr/share/X11/xorg.conf.d/ 
+[user]~$ sudo vi 20-nvidia.conf
+```
+then add to the file '20-nvidia.conf'
+```
+Section "Device"
+Identifier "MyGPU"
+Driver "nvidia"
+Option "Interactive" "0"
+EndSection
+```
+If you're not familiar with vi or vim, hit 'esc' then :wq to save and quit the editor
+You may need to reboot after this. You may not need to do it all though. Totally depends on how your system is set up.
+
+## Get Cracking  
+We're good to go!  
+Now let's go back to our project directory and run the utility keepass2john
+```
+[user]~$ cd ~/Documents/crackpass
+[user]~$ john/run/keepass2john CrackThis.kdb > CrackThis.txt
+```
+We can use that text file with JohnTheRipper. Unfortunately,  keepass2john starts the file with a prefix that hashcat doesn't recognize. If you open CrackThis.txt with a text editor, you'll see:  
+>CrackThis.kdb:$keepass$*1*6000*0*cdee75c93f43...  
+You could copy and past the very long hash into a new file without 'CrackThis.kdb':. Or you could let the system do it for you!  
+```
+[user]~$ john/run/keepass2john CrackThis.kdb | grep -o "$keepass$.*" >  CrackThis.hash
+```
+We know we have a keepass hash file, so let's find the settings in hashcat for that
+```
+[user]$ hashcat --help | grep -i "KeePass"
+>  13400 | KeePass 1 (AES/Twofish) and KeePass 2 (AES)      | Password Managers
+ ``` 
+ If you look back through the hashcat settings (```hashcat --help```) you'll see the flags we need to run a dictionary attach on a keepass hash. 
+* -m 13400 : Type of hash we are cracking (KeePass)
+* -a 0 : Attack mode, 0=Dictionary Attack
+* - w 2 : Optional workload profile 1=Low, 2=Economic (default)
+* -d  (backend) or -D (OpenCL backend): Optional device type 1=CPU, 2=GPU
+* -o CatCracked.txt : is the output file for the cracked passwords
+* CrackThis.hash : input file with the hash value
+* rockyou.txt : path to dictionary used for the attack (in current folder in this case)
+
+Lets make sure we're in our project directory and run HashCat
+```
+[user]$ cd ~/Documents/crackpass
+[user]$ hashcat -a 0 -m 13400 -o cracked_output.txt --outfile-format 2 CrackThis.hash rockyou.txt
+```
+![HashCat Results](https://github.com/patecm/cracking_keepass/blob/f6e132d3ee7b745ccee8e4e6dfb4a2f46c56c80f/images/hashcat_complete.png)
+It was a pretty easy an unsecure password. 
+Hashcat cracked it in about **2 seconds** on my machine!
+
+cracked_out.txt contains the plain text password for you  
+
+What if you want delete the output or accidentally overwrite an old password crack? No worries. Hashcat saves past cracks in the potfile at ```~/.hashcat/hashcat.potfile```  
+By specifying the type of hash and original has file, you can print out the results again
+```
+hashcat -m 13400 --show -o cracked_output.txt --outfile-format 2 CrackThis.hash
+```
+And there you go. You're all set to get cracking!
