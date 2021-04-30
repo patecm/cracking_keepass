@@ -176,7 +176,7 @@ And there you go. You're all set to get cracking!
 ---
 
 Found this guide helpful? Tips are always appreciated.  
-Bitcoin (BTC): 3Qq1JMzfEApAMtwyjtawnr3DRr4pbmRsUq   
-or BTC by [QR code](https://github.com/patecm/cracking_keepass/blob/d93d001bd6263abbc90c31ea5d71a098d509912a/images/btcQR.png)  
+Bitcoin (BTC): 3Qq1JMzfEApAMtwyjtawnr3DRr4pbmRsUq   or [QR code](https://github.com/patecm/cracking_keepass/blob/d93d001bd6263abbc90c31ea5d71a098d509912a/images/btcQR.png)  
+or via Crypto_TheBot on Telegram @AmbitiousDonut
 
 
