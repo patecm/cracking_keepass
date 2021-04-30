@@ -172,3 +172,9 @@ By specifying the type of hash and original has file, you can print out the resu
 hashcat -m 13400 --show -o cracked_output.txt --outfile-format 2 CrackThis.hash
 ```
 And there you go. You're all set to get cracking!
+
+---
+
+Found this guide helpful? Tips are always appreciated.
+Bitcoin: 3Qq1JMzfEApAMtwyjtawnr3DRr4pbmRsUq 
+or bitcoin by [QR code](https://github.com/patecm/cracking_keepass/blob/d93d001bd6263abbc90c31ea5d71a098d509912a/images/btcQR.png)
